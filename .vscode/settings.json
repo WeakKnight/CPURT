@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*.cginc": "slang",
+        "*.shader": "slang",
+        "*.compute": "slang",
+        "*.raytrace": "slang",
+        "vector": "cpp"
+    }
+}
