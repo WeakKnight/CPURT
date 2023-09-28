@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename T, size_t N>
 struct Vec {
@@ -127,6 +127,6 @@ BVH_ALWAYS_INLINE Vec<T, N> normalize(const Vec<T, N>& v) {
     return v * (static_cast<T>(1.) / length(v));
 }
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

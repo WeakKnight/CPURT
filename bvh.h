@@ -9,7 +9,7 @@
 #include <stack>
 #include <utility>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename Node>
 struct Bvh {
@@ -152,6 +152,6 @@ Bvh<Node> Bvh<Node>::deserialize(InputStream& stream) {
     return bvh;
 }
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

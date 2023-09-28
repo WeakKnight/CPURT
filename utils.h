@@ -9,7 +9,7 @@
 #include <cmath>
 #include <atomic>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Helper type that gives an unsigned integer type with the given number of bits.
 template <size_t Bits>
@@ -125,6 +125,6 @@ BVH_ALWAYS_INLINE T atomic_max(std::atomic<T>& atomic, const T& value) {
     return prev_value;
 }
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

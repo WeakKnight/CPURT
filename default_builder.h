@@ -7,15 +7,15 @@
 #include "reinsertion_optimizer.h"
 #include "thread_pool.h"
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// This builder is only a wrapper around all the other builders, which selects the best builder
 /// depending on the desired BVH quality and whether a multi-threaded build is desired.
 template <typename Node>
 class DefaultBuilder {
     using Scalar = typename Node::Scalar;
-    using Vec  = bvh::v2::Vec<Scalar, Node::dimension>;
-    using BBox = bvh::v2::BBox<Scalar, Node::dimension>;
+    using Vec  = v2::Vec<Scalar, Node::dimension>;
+    using BBox = v2::BBox<Scalar, Node::dimension>;
 
 public:
     enum class Quality { Low, Medium, High };
@@ -73,6 +73,6 @@ private:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

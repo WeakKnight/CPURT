@@ -13,7 +13,7 @@
 #include <numeric>
 #include <cassert>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Multi-threaded top-down builder that partitions primitives using a grid. Multiple instances
 /// of a single-threaded builder are run in parallel on that partition, generating many small
@@ -23,8 +23,8 @@ namespace bvh::v2 {
 template <typename Node, typename MortonCode = uint32_t>
 class MiniTreeBuilder {
     using Scalar = typename Node::Scalar;
-    using Vec  = bvh::v2::Vec<Scalar, Node::dimension>;
-    using BBox = bvh::v2::BBox<Scalar, Node::dimension>;
+    using Vec  = v2::Vec<Scalar, Node::dimension>;
+    using BBox = v2::BBox<Scalar, Node::dimension>;
 
 public:
     struct Config : TopDownSahBuilder<Node>::Config {
@@ -310,6 +310,6 @@ private:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

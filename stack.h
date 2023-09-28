@@ -4,7 +4,7 @@
 #include <vector>
 #include <cassert>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Fixed-size stack that can be used for a BVH traversal.
 template <typename T, unsigned Capacity>
@@ -45,6 +45,6 @@ struct GrowingStack {
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

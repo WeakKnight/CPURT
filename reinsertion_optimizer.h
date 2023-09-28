@@ -8,12 +8,12 @@
 #include <vector>
 #include <algorithm>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename Node>
 class ReinsertionOptimizer {
     using Scalar = typename Node::Scalar;
-    using BBox = bvh::v2::BBox<Scalar, Node::dimension>;
+    using BBox = v2::BBox<Scalar, Node::dimension>;
 
 public:
     struct Config {
@@ -267,6 +267,6 @@ private:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Helper object that provides iteration and reduction over one-dimensional ranges.
 template <typename Derived>
@@ -84,6 +84,6 @@ struct ParallelExecutor : Executor<ParallelExecutor> {
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

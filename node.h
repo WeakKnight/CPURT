@@ -11,7 +11,7 @@
 #include <array>
 #include <limits>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <
     typename T,
@@ -148,6 +148,6 @@ private:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

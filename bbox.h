@@ -6,7 +6,7 @@
 
 #include <limits>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename T, size_t N>
 struct BBox {
@@ -44,6 +44,6 @@ struct BBox {
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

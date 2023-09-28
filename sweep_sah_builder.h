@@ -10,7 +10,7 @@
 #include <numeric>
 #include <cassert>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Single-threaded top-down builder that partitions primitives based on the Surface
 /// Area Heuristic (SAH). Primitives are only sorted once along each axis.
@@ -140,6 +140,6 @@ protected:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

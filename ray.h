@@ -3,7 +3,7 @@
 
 #include "vec.h"
 
-namespace bvh::v2 {
+namespace v2 {
 
 struct Octant {
     uint32_t value = 0;
@@ -48,6 +48,6 @@ struct Ray {
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

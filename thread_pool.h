@@ -8,7 +8,7 @@
 #include <queue>
 #include <functional>
 
-namespace bvh::v2 {
+namespace v2 {
 
 class ThreadPool {
 public:
@@ -99,6 +99,6 @@ void ThreadPool::join() {
         thread.join();
 }
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

@@ -9,7 +9,7 @@
 #include <utility>
 #include <optional>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename T, size_t N>
 struct Tri {
@@ -76,6 +76,6 @@ std::optional<std::pair<T, T>> PrecomputedTri<T>::intersect(Ray<T, 3>& ray, T to
     return std::nullopt;
 }
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

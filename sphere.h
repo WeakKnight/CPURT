@@ -8,7 +8,7 @@
 #include <utility>
 #include <optional>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Sphere primitive defined by a center and a radius.
 template <typename T, size_t N>
@@ -49,6 +49,6 @@ struct Sphere  {
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

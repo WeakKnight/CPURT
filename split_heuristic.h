@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-namespace bvh::v2 {
+namespace v2 {
 
 template <typename T>
 class SplitHeuristic {
@@ -43,6 +43,6 @@ private:
     T cost_ratio_;
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

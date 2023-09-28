@@ -4,7 +4,7 @@
 #include <istream>
 #include <ostream>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Stream of data that can be used to deserialize data structures.
 class InputStream {
@@ -67,6 +67,6 @@ protected:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

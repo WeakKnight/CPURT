@@ -10,7 +10,7 @@
 #include <numeric>
 #include <cassert>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Single-threaded top-down builder that partitions primitives based on a binned approximation of
 /// the Surface Area Heuristic (SAH). This builder is inspired by
@@ -157,6 +157,6 @@ protected:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif

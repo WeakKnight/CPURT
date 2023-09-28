@@ -13,15 +13,15 @@
 #include <numeric>
 #include <cassert>
 
-namespace bvh::v2 {
+namespace v2 {
 
 /// Base class for all SAH-based, top-down builders.
 template <typename Node>
 class TopDownSahBuilder {
 protected:
     using Scalar = typename Node::Scalar;
-    using Vec  = bvh::v2::Vec<Scalar, Node::dimension>;
-    using BBox = bvh::v2::BBox<Scalar, Node::dimension>;
+    using Vec  = v2::Vec<Scalar, Node::dimension>;
+    using BBox = v2::BBox<Scalar, Node::dimension>;
 
 public:
     struct Config {
@@ -138,6 +138,6 @@ protected:
     }
 };
 
-} // namespace bvh::v2
+} // namespace v2
 
 #endif
