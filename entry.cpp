@@ -43,7 +43,7 @@ struct HitInfo
 	float baryX;
 
 	float baryY;
-	int frontFacing;
+	int hitBackFace;
 	float pad1;
 	float pad2;
 };
@@ -117,7 +117,7 @@ extern "C"
 
 				auto prim_id = invalid_id;
 				Scalar u, v;
-				int frontFacing;
+				int hitBackFace;
 
 				// Traverse the BVH and get the u, v coordinates of the closest intersection.
 				v2::SmallStack<Bvh::Index, stack_size> stack;
@@ -130,7 +130,7 @@ extern "C"
 							if (auto hit = precomputed_tris[j].intersect(ray)) 
 							{
 								prim_id = i;
-								frontFacing = v2::dot(precomputed_tris[j].n, -ray.dir) > 0.0f?1: 0;
+								hitBackFace = v2::dot(precomputed_tris[j].n, -ray.dir) > 0.0f?1: 0;
 								std::tie(u, v) = *hit;
 							}
 						}
@@ -144,7 +144,7 @@ extern "C"
 					hitInfo.primIdx = (int)prim_id;
 					hitInfo.baryX = u;
 					hitInfo.baryY = v;
-					hitInfo.frontFacing = frontFacing;
+					hitInfo.hitBackFace = hitBackFace;
 				}
 				else
 				{
