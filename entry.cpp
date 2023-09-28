@@ -28,10 +28,10 @@ struct RayDesc
 	float ox;
 	float oy;
 	float oz;
+	float tmin;
 	float dx;
 	float dy;
 	float dz;
-	float tmin;
 	float tmax;
 };
 
@@ -43,7 +43,7 @@ struct HitInfo
 	float baryX;
 
 	float baryY;
-	float pad0;
+	int frontFacing;
 	float pad1;
 	float pad2;
 };
@@ -86,15 +86,18 @@ extern "C"
 
 		// This precomputes some data to speed up traversal further.
 		std::vector<PrecomputedTri> precomputed_tris(tris.size());
-		executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
-			for (size_t i = begin; i < end; ++i) {
+		executor.for_each(0, tris.size(), [&](size_t begin, size_t end) 
+		{
+			for (size_t i = begin; i < end; ++i) 
+			{
 				auto j = should_permute ? bvh.prim_ids[i] : i;
 				precomputed_tris[i] = tris[j];
 			}
-			});
+		});
 
 		std::vector<Ray> rays(rayCount);
-		executor.for_each(0llu, (size_t)rayCount, [&](size_t begin, size_t end) {
+		executor.for_each(0llu, (size_t)rayCount, [&](size_t begin, size_t end) 
+		{
 			for (size_t rayIdx = begin; rayIdx < end; ++rayIdx)
 			{
 				HitInfo hitInfo;
@@ -114,15 +117,20 @@ extern "C"
 
 				auto prim_id = invalid_id;
 				Scalar u, v;
+				int frontFacing;
 
 				// Traverse the BVH and get the u, v coordinates of the closest intersection.
 				v2::SmallStack<Bvh::Index, stack_size> stack;
 				bvh.intersect<false, use_robust_traversal>(ray, bvh.get_root().index, stack,
-					[&](size_t begin, size_t end) {
-						for (size_t i = begin; i < end; ++i) {
+					[&](size_t begin, size_t end) 
+					{
+						for (size_t i = begin; i < end; ++i) 
+						{
 							size_t j = should_permute ? i : bvh.prim_ids[i];
-							if (auto hit = precomputed_tris[j].intersect(ray)) {
+							if (auto hit = precomputed_tris[j].intersect(ray)) 
+							{
 								prim_id = i;
+								frontFacing = v2::dot(precomputed_tris[j].n, -ray.dir) > 0.0f?1: 0;
 								std::tie(u, v) = *hit;
 							}
 						}
@@ -136,6 +144,7 @@ extern "C"
 					hitInfo.primIdx = (int)prim_id;
 					hitInfo.baryX = u;
 					hitInfo.baryY = v;
+					hitInfo.frontFacing = frontFacing;
 				}
 				else
 				{
@@ -143,6 +152,7 @@ extern "C"
 				}
 
 				results[rayIdx] = hitInfo;
-			}});
+			}
+		});
 	}
 }
