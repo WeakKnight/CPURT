@@ -11,7 +11,11 @@
 #include <iostream>
 #include <span>
 
+#ifdef WIN32
 #define CPURT_API __declspec(dllexport) 
+#else
+#define CPURT_API
+#endif
 
 using Scalar = float;
 using Vec3 = v2::Vec<Scalar, 3>;
