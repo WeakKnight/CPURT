@@ -1,6 +1,6 @@
 # CPURT
 
-a handy cpu based ray tracing kernel based on [BVH](https://github.com/madmann91/bvh).
+a handy cpu-based ray tracing kernel based on [BVH](https://github.com/madmann91/bvh).
 
 ```cpp
 Context* cpurt_init(float* trisPtr, int triNum);
