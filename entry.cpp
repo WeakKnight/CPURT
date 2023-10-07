@@ -48,111 +48,136 @@ struct HitInfo
 	float pad2;
 };
 
+struct Context
+{
+	std::vector<BBox> bboxes;
+	std::vector<Vec3> centers;
+	std::vector<PrecomputedTri> precomputed_tris;
+	v2::Bvh<Node> bvh;
+	v2::ThreadPool thread_pool;
+	v2::ParallelExecutor executor;
+
+	Context(int triNum)
+		:
+		bboxes(triNum),
+		centers(triNum),
+		precomputed_tris(triNum),
+		executor(thread_pool)
+	{
+	}
+};
+
+// Permuting the primitive data allows to remove indirections during traversal, which makes it faster.
+static constexpr bool sShouldPermute = true;
+
 extern "C"
 {
-	CPURT_API void dispatch_rays(float* trisPtr, int triNum, RayDesc* rayDescs, int rayCount, HitInfo* results)
+	CPURT_API Context* cpurt_init(float* trisPtr, int triNum)
 	{
-		v2::ThreadPool thread_pool;
-		v2::ParallelExecutor executor(thread_pool);
+		Context* context = new Context(triNum);
 
-		std::vector<Tri> tris(triNum);
-		executor.for_each(0, tris.size(), [&](size_t begin, size_t end) 
+		auto getTri = [&](int triIdx)
 		{
-			for (size_t triIdx = begin; triIdx < end; ++triIdx)
-			{
-				tris[triIdx] = Tri(
-					Vec3(trisPtr[(triIdx * 3 + 0) * 3 + 0], trisPtr[(triIdx * 3 + 0) * 3 + 1], trisPtr[(triIdx * 3 + 0) * 3 + 2]),
-					Vec3(trisPtr[(triIdx * 3 + 1) * 3 + 0], trisPtr[(triIdx * 3 + 1) * 3 + 1], trisPtr[(triIdx * 3 + 1) * 3 + 2]),
-					Vec3(trisPtr[(triIdx * 3 + 2) * 3 + 0], trisPtr[(triIdx * 3 + 2) * 3 + 1], trisPtr[(triIdx * 3 + 2) * 3 + 2]));
-			}
-		});
+			return Tri(
+				Vec3(trisPtr[(triIdx * 3 + 0) * 3 + 0], trisPtr[(triIdx * 3 + 0) * 3 + 1], trisPtr[(triIdx * 3 + 0) * 3 + 2]),
+				Vec3(trisPtr[(triIdx * 3 + 1) * 3 + 0], trisPtr[(triIdx * 3 + 1) * 3 + 1], trisPtr[(triIdx * 3 + 1) * 3 + 2]),
+				Vec3(trisPtr[(triIdx * 3 + 2) * 3 + 0], trisPtr[(triIdx * 3 + 2) * 3 + 1], trisPtr[(triIdx * 3 + 2) * 3 + 2]));
+		};
 
 		// Get triangle centers and bounding boxes (required for BVH builder)
-		std::vector<BBox> bboxes(tris.size());
-		std::vector<Vec3> centers(tris.size());
-		executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
+
+		context->executor.for_each(0, triNum, [&](size_t begin, size_t end) {
 			for (size_t i = begin; i < end; ++i) {
-				bboxes[i] = tris[i].get_bbox();
-				centers[i] = tris[i].get_center();
+				context->bboxes[i] = getTri(i).get_bbox();
+				context->centers[i] = getTri(i).get_center();
 			}
 			});
 
 		typename v2::DefaultBuilder<Node>::Config config;
 		config.quality = v2::DefaultBuilder<Node>::Quality::High;
-		auto bvh = v2::DefaultBuilder<Node>::build(thread_pool, bboxes, centers, config);
+		context->bvh = v2::DefaultBuilder<Node>::build(context->thread_pool, context->bboxes, context->centers, config);
 
-		// Permuting the primitive data allows to remove indirections during traversal, which makes it faster.
-		static constexpr bool should_permute = true;
-
-		// This precomputes some data to speed up traversal further.
-		std::vector<PrecomputedTri> precomputed_tris(tris.size());
-		executor.for_each(0, tris.size(), [&](size_t begin, size_t end) 
-		{
-			for (size_t i = begin; i < end; ++i) 
+		context->executor.for_each(0, triNum, [&](size_t begin, size_t end)
 			{
-				auto j = should_permute ? bvh.prim_ids[i] : i;
-				precomputed_tris[i] = tris[j];
-			}
-		});
-
-		std::vector<Ray> rays(rayCount);
-		executor.for_each(0llu, (size_t)rayCount, [&](size_t begin, size_t end) 
-		{
-			for (size_t rayIdx = begin; rayIdx < end; ++rayIdx)
-			{
-				HitInfo hitInfo;
-
-				RayDesc rayDesc = rayDescs[rayIdx];
-				Ray ray = Ray
+				for (size_t i = begin; i < end; ++i)
 				{
-					Vec3(rayDesc.ox, rayDesc.oy, rayDesc.oz), // Ray origin
-					Vec3(rayDesc.dx, rayDesc.dy, rayDesc.dz), // Ray direction
-					rayDesc.tmin,               // Minimum intersection distance
-					rayDesc.tmax                // Maximum intersection distance
-				};
-				
-				static constexpr size_t invalid_id = std::numeric_limits<size_t>::max();
-				static constexpr size_t stack_size = 64;
-				static constexpr bool use_robust_traversal = false;
+					auto j = sShouldPermute ? context->bvh.prim_ids[i] : i;
+					context->precomputed_tris[i] = getTri(j);
+				}
+			});
 
-				auto prim_id = invalid_id;
-				Scalar u, v;
-				int hitBackFace;
+		return context;
+	}
 
-				// Traverse the BVH and get the u, v coordinates of the closest intersection.
-				v2::SmallStack<Bvh::Index, stack_size> stack;
-				bvh.intersect<false, use_robust_traversal>(ray, bvh.get_root().index, stack,
-					[&](size_t begin, size_t end) 
+	CPURT_API void cpurt_dispatch_rays(Context* context, RayDesc* rayDescs, int rayCount, HitInfo* results)
+	{
+		context->executor.for_each(0llu, (size_t)rayCount, [&](size_t begin, size_t end)
+			{
+				for (size_t rayIdx = begin; rayIdx < end; ++rayIdx)
+				{
+					HitInfo hitInfo;
+
+					RayDesc rayDesc = rayDescs[rayIdx];
+					Ray ray = Ray
 					{
-						for (size_t i = begin; i < end; ++i) 
+						Vec3(rayDesc.ox, rayDesc.oy, rayDesc.oz), // Ray origin
+						Vec3(rayDesc.dx, rayDesc.dy, rayDesc.dz), // Ray direction
+						rayDesc.tmin,               // Minimum intersection distance
+						rayDesc.tmax                // Maximum intersection distance
+					};
+
+					static constexpr size_t invalid_id = std::numeric_limits<size_t>::max();
+					static constexpr size_t stack_size = 64;
+					static constexpr bool use_robust_traversal = false;
+
+					auto prim_id = invalid_id;
+					Scalar u, v;
+					int hitBackFace;
+
+					// Traverse the BVH and get the u, v coordinates of the closest intersection.
+					v2::SmallStack<Bvh::Index, stack_size> stack;
+					context->bvh.intersect<false, use_robust_traversal>(ray, context->bvh.get_root().index, stack,
+						[&](size_t begin, size_t end)
 						{
-							size_t j = should_permute ? i : bvh.prim_ids[i];
-							if (auto hit = precomputed_tris[j].intersect(ray)) 
+							for (size_t i = begin; i < end; ++i)
 							{
-								prim_id = i;
-								hitBackFace = v2::dot(precomputed_tris[j].n, -ray.dir) > 0.0f?1: 0;
-								std::tie(u, v) = *hit;
+								size_t j = sShouldPermute ? i : context->bvh.prim_ids[i];
+								if (auto hit = context->precomputed_tris[j].intersect(ray))
+								{
+									prim_id = i;
+									hitBackFace = v2::dot(context->precomputed_tris[j].n, -ray.dir) > 0.0f ? 1 : 0;
+									std::tie(u, v) = *hit;
+								}
 							}
-						}
-						return prim_id != invalid_id;
-					});
+							return prim_id != invalid_id;
+						});
 
-				if (prim_id != invalid_id)
-				{
-					hitInfo.hit = 1;
-					hitInfo.t = ray.tmax;
-					hitInfo.primIdx = (int)prim_id;
-					hitInfo.baryX = u;
-					hitInfo.baryY = v;
-					hitInfo.hitBackFace = hitBackFace;
-				}
-				else
-				{
-					hitInfo.hit = 0;
-				}
+					if (prim_id != invalid_id)
+					{
+						hitInfo.hit = 1;
+						hitInfo.t = ray.tmax;
+						hitInfo.primIdx = (int)prim_id;
+						hitInfo.baryX = u;
+						hitInfo.baryY = v;
+						hitInfo.hitBackFace = hitBackFace;
+					}
+					else
+					{
+						hitInfo.hit = 0;
+					}
 
-				results[rayIdx] = hitInfo;
-			}
-		});
+					results[rayIdx] = hitInfo;
+				}
+			});
+
+		context->thread_pool.wait();
+	}
+
+	CPURT_API void cpurt_release(Context* context)
+	{
+		if (context != nullptr)
+		{
+			delete context;
+		}
 	}
 }
