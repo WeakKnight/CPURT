@@ -19,3 +19,6 @@ void DispatchRays(IntPtr context, NativeArray<RayDesc> rays, NativeArray<HitInfo
 
 void Release(IntPtr context);
 ```
+
+### Performance
+On an AMD Ryzen 9 5950X, it takes 0.2ms to shoot 512 rays at a mesh consisting of 15,000 triangles.
