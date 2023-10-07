@@ -11,7 +11,7 @@
 #include <iostream>
 #include <span>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define CPURT_API __declspec(dllexport) 
 #else
 #define CPURT_API
