@@ -1,5 +1,7 @@
 # CPURT
 
+![Build Status](https://github.com/WeakKnight/CPURT/workflows/build/badge.svg)
+
 a handy cpu ray tracing kernel based on [BVH](https://github.com/madmann91/bvh).
 
 ### C++
