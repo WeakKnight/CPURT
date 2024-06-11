@@ -71,9 +71,6 @@ struct Context
 	}
 };
 
-// Permuting the primitive data allows to remove indirections during traversal, which makes it faster.
-static constexpr bool sShouldPermute = true;
-
 extern "C"
 {
 	CPURT_API Context* cpurt_init(float* trisPtr, int triNum)
@@ -105,8 +102,8 @@ extern "C"
 			{
 				for (size_t i = begin; i < end; ++i)
 				{
-					auto j = sShouldPermute ? context->bvh.prim_ids[i] : i;
-					context->precomputed_tris[i] = getTri(j);
+					int primId = context->bvh.prim_ids[i];
+					context->precomputed_tris[primId] = getTri(primId);
 				}
 			});
 
@@ -145,11 +142,11 @@ extern "C"
 						{
 							for (size_t i = begin; i < end; ++i)
 							{
-								size_t j = sShouldPermute ? i : context->bvh.prim_ids[i];
-								if (auto hit = context->precomputed_tris[j].intersect(ray))
+								int primId = context->bvh.prim_ids[i];
+								if (auto hit = context->precomputed_tris[primId].intersect(ray))
 								{
-									prim_id = i;
-									hitBackFace = v2::dot(context->precomputed_tris[j].n, -ray.dir) > 0.0f ? 1 : 0;
+									prim_id = primId;
+									hitBackFace = v2::dot(context->precomputed_tris[primId].n, -ray.dir) > 0.0f ? 1 : 0;
 									std::tie(u, v) = *hit;
 								}
 							}
